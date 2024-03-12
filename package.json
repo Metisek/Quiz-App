@@ -4,7 +4,9 @@
   "description": "Quiz App I Nest.js learning assignment",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start:dev": "nodemon src/index.ts",
+    "build":"tsc"
   },
   "repository": {
     "type": "git",
@@ -27,9 +29,12 @@
     "fastify": "^4.26.2",
     "graphql": "^16.8.1",
     "graphql-yoga": "^5.1.1",
-    "pg": "^8.11.3"
+    "nodemon": "^3.1.0",
+    "pg": "^8.11.3",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "jest": "^29.7.0",
     "typescript": "^5.4.2"
   }
