@@ -1,23 +1,34 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+const { Client } = require('pg');
+const dotenv = require('dotenv');
+dotenv.config(); // Load environment variables from cred.env
 
-// Middleware do obsługi żądań HTTP
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public')); // Folder publiczny dla plików statycznych (np. HTML, CSS, JS)
-
-// Obsługa żądania GET dla głównej strony
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html'); // Wysyłanie pliku HTML z formularzem
+// Create a PostgreSQL client instance
+const client = new Client({
+  user: process.env.POSTGRES_USER,
+  host: 'quizapp.northeurope.cloudapp.azure.com', // Update the host here
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  port: 5432, // Default PostgreSQL port
 });
 
-// Obsługa żądania POST z formularza
-app.post('/submit', (req, res) => {
-  const textValue = req.body.text; // Pobranie wartości z pola tekstowego
-  res.send(`Odebrano wartość: ${textValue}`);
+// Connect to the PostgreSQL database
+client.connect()
+  .then(() => {
+    console.log('Connected to the database');
+    // Perform database operations here
+  })
+  .catch(err => {
+    console.error('Error connecting to the database:', err.message);
+  });
+
+// Example query
+client.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('Error executing query:', err.message);
+  } else {
+    console.log('Query result:', res.rows);
+  }
 });
 
-// Start serwera
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
-});
+// Close the database connection when done
+client.end();
