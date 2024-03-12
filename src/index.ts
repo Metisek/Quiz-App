@@ -1,9 +1,13 @@
-import express from "express";
-const app = express();
-const PORT = 3000;
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-app.listen(PORT, () => {
-  console.log(`Express server is listening at ${PORT}`);
-});
+import { Controller, Get } from '@nestjs/common';
+import { DatabaseService } from './database.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly databaseService: DatabaseService) {}
+
+  @Get()
+  async getData() {
+    await this.databaseService.connect();
+    await this.databaseService.query('SELECT * FROM quizapp.quiz');
+  }
+}
