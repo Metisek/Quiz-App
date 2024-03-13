@@ -1,75 +1,8 @@
 import { buildSchema } from "graphql"
 import express from "express"
 import { graphqlHTTP } from "express-graphql"
-
-const users = [
-    { id: 1, name: "John Doe", email: "johndoe@gmail.com" },
-    { id: 2, name: "Jane Doe", email: "janedoe@gmail.com" },
-    { id: 3, name: "Mike Doe", email: "mikedoe@gmail.com" },
-]
-
-const schema = buildSchema(`
-    input UserInput {
-        email: String!
-        name: String!
-
-    }
-
-    type User {
-        id: Int!
-        name: String!
-        email: String!
-    }
-
-    type Mutation {
-        createUser(input: UserInput): User
-        updateUser(id: Int!, input: UserInput): User
-    }
-
-    type Query {
-        getUser(id: String): User
-        getUsers: [User]
-    }
-`)
-
-type User = {
-    id: number
-    name: string
-    email: string
-}
-
-type UserInput = Pick<User, "email" | "name">
-
-const getUser = (args: { id: number }): User | undefined =>
-    users.find(u => u.id === args.id)
-
-const getUsers = (): User[] => users
-
-const createUser = (args: { input: UserInput }): User => {
-    const user = {
-        id: users.length + 1,
-        ...args.input,
-    }
-    users.push(user)
-
-    return user
-}
-
-const updateUser = (args: { user: User }): User => {
-    const index = users.findIndex(u => u.id === args.user.id)
-    const targetUser = users[index]
-
-    if (targetUser) users[index] = args.user
-
-    return targetUser
-}
-
-const root = {
-    getUser,
-    getUsers,
-    createUser,
-    updateUser,
-}   
+import schema from "./graphql/schema"
+import resolvers from "./graphql/resolvers"
 
 
 const app = express()
@@ -78,7 +11,7 @@ app.use(
     "/graphql",
     graphqlHTTP({
         schema: schema,
-        rootValue: root,
+        rootValue: resolvers,
         graphiql: true,
     })
 )
@@ -88,3 +21,25 @@ const PORT = 3000
 app.listen(PORT)
 
 console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
+
+
+// import { DatabaseService } from './database.service';
+
+// async function main() {
+//   const databaseService = new DatabaseService();
+
+//   // Connect to the database
+//   await databaseService.connect();
+
+//   // Example queries
+//   await databaseService.query('SELECT * FROM quizapp.question');
+// //   await databaseService.query('INSERT INTO your_table (column1, column2) VALUES (value1, value2)');
+
+//   // Close the database connection
+//   // Note: Since you're using 'await' in the query method, the connection will be closed automatically after each query.
+//   // So you may not need to explicitly call databaseService.close() here.
+// }
+
+// main().catch((error) => {
+//   console.error('Error:', error);
+// });

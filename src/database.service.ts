@@ -1,8 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 import * as dotenv from 'dotenv';
 
-@Injectable()
 export class DatabaseService {
   private client: Client;
 
@@ -34,7 +32,7 @@ export class DatabaseService {
   async query(sql: string) {
     try {
       const res = await this.client.query(sql);
-      console.error('Query result:', res.rows);
+      console.log(res.rows);
     } catch (err) {
       if (err instanceof Error){
           console.error('Error executing query:', err.message);
