@@ -37,8 +37,6 @@ export class DatabaseService {
       if (err instanceof Error){
           console.error('Error executing query:', err.message);
       }
-    } finally {
-      await this.client.end();
-    }
+    } 
   }
 }

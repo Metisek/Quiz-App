@@ -10,6 +10,7 @@ export class queries {
     async getQuizzes() {
       try {
         const quizzes = await database_service.query('SELECT * FROM quizapp.quiz');
+        
         return quizzes;
       } catch (error) {
         console.error('Error fetching quizzes:', error);
