@@ -21,7 +21,7 @@ export class DatabaseService {
   async connect() {
     try {
       await this.client.connect();
-      console.error('Connected to the database');
+      console.log('Connected to the database');
     } catch (err) {
       if (err instanceof Error){
         console.error('Error connecting to the database:', err.message);
@@ -32,7 +32,7 @@ export class DatabaseService {
   async query(sql: string) {
     try {
       const res = await this.client.query(sql);
-      console.log(res.rows);
+      return(res.rows)
     } catch (err) {
       if (err instanceof Error){
           console.error('Error executing query:', err.message);
