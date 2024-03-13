@@ -3,7 +3,6 @@ import { graphqlHTTP } from "express-graphql"
 import schema from "./graphql/schema"
 import resolvers from "./graphql/resolvers"
 
-
 const app = express()
 
 app.use(
