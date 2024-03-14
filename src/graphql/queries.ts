@@ -96,6 +96,46 @@ export class queries {
     }
   }
   
-    
+  // Data modification
+  async updateQuizName(quizId: number, newName: string) {
+    try {
+      const query = `UPDATE quizapp.quiz SET name = $1 WHERE id = $2`;
+      await database_service.query(query, newName, quizId);
+      console.log(`Quiz name updated successfully`);
+    } catch (error) {
+      console.error("Failed to update quiz name:", error);
+      throw new Error("Failed to update quiz name");
+    }
+  }
+
+  async updateQuestionText(questionId: number, newText: string) {
+    try {
+      // Get the existing question to retain question_type
+      const existingQuestion = await this.getQuestionById(questionId);
+      if (existingQuestion) {
+        const query = `UPDATE quizapp.question SET question_text = $1 WHERE id = $2`;
+        await database_service.query(query, newText, questionId)
+      } else {
+        console.error(`Question with ID ${questionId} not found.`);
+      }
+    } catch (error) {
+      console.error("Failed to update question text:", error);
+      throw new Error("Failed to update question text");
+    }
+  }
+
+  // Private getters
+
+  private async getQuestionById(questionId: number) {
+    const query = `SELECT * FROM quizapp.question WHERE id = $1`;
+    const result = await database_service.query(query, questionId);
+    if (result) {
+      return result[0];
+    }else{
+      console.error("Failed to get question with id:", questionId);
+      throw new Error("Failed to update queston");
+    }
+  }
+
     
 }

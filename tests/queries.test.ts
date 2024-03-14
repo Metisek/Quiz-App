@@ -63,5 +63,17 @@ describe('Queries SELECT tests', () =>{
         await query_list.deleteQuiz(last_quiz); 
         }
     )
+    test('Update quiz name', async () => {
+        const quizId = 34;
+        const newQuizName = 'New Quiz Name';
+    
+        await query_list.updateQuizName(quizId, newQuizName);
+    })
 
+    test('Update question text', async () => {   
+        const questionId = 65;
+        const newQuestionText = 'New Question Text';
+    
+        await query_list.updateQuestionText(questionId, newQuestionText);
+    })
 })
