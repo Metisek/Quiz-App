@@ -1,27 +1,21 @@
-// import { Controller, Get } from '@nestjs/common';
-// import { DatabaseService } from './database.service';
+import express from "express"
+import { graphqlHTTP } from "express-graphql"
+import schema from "./graphql/schema"
+import resolvers from "./graphql/resolvers"
 
-// @Controller()
-// export class AppController {
-//   constructor(private readonly databaseService: DatabaseService) {}
+const app = express()
 
-//   @Get()
-//   async getData() {
-//     await this.databaseService.connect();
-//     await this.databaseService.query('SELECT * FROM quizapp.quiz');
+app.use(
+    "/graphql",
+    graphqlHTTP({
+        schema: schema,
+        rootValue: resolvers,
+        graphiql: true,
+    })
+)
 
-//   }
-// }
+const PORT = 3000
 
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+app.listen(PORT)
 
-@Module({
-  imports: [
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-    }),
-  ],
-})
-export class AppModule {}
+console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)

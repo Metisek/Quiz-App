@@ -1,8 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 import * as dotenv from 'dotenv';
 
-@Injectable()
 export class DatabaseService {
   private client: Client;
 
@@ -23,7 +21,7 @@ export class DatabaseService {
   async connect() {
     try {
       await this.client.connect();
-      console.error('Connected to the database');
+      console.log('Connected to the database');
     } catch (err) {
       if (err instanceof Error){
         console.error('Error connecting to the database:', err.message);
@@ -31,16 +29,23 @@ export class DatabaseService {
     }
   }
 
-  async query(sql: string) {
+  async query(sql: string, ...params: any[]) {
     try {
-      const res = await this.client.query(sql);
-      console.error('Query result:', res.rows);
+      const command = sql.trim().split(' ')[0].toUpperCase();
+      const res = await this.client.query(sql, params);
+      
+      if (command === 'SELECT') {
+        return res.rows;
+      } else {
+        console.log(`Data ${command.toLowerCase()}ed successfully`);
+        return;
+      }
     } catch (err) {
       if (err instanceof Error){
-          console.error('Error executing query:', err.message);
+        console.error('Error executing query:', err.message);
       }
-    } finally {
-      await this.client.end();
+      throw err;
     }
   }
+
 }
