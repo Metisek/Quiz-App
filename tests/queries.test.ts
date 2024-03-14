@@ -20,14 +20,23 @@ describe('Queries SELECT tests', () =>{
         logSpy.mockRestore();
     });
         
-    test('Check if getting quizzes work', async () =>{ 
+    test('Check getting quizzez', async () =>{ 
         const res = await query_list.getQuizzes(); 
         checkColumnValueExists(res, "name", "Example Quiz");
     });
 
-    test('Check if getting questions for quiz 1 work', async () =>{ 
+    test('Check getting questions from quiz 1', async () =>{ 
         const res = await query_list.getQuestions(1); 
         checkColumnValueExists(res, "question_text", "What is the capital of France?");
         }
     )
+
+    // test('Check question insertion quiz 1 correct data', async () =>{ 
+    //     await query_list.insertQuestion(1, "Test Question", "single_correct"); 
+    //     const res = await query_list.getQuestions(1); 
+    //     checkColumnValueExists(res, "question_text", "Test Question");
+    //     }
+    // )
+    
+
 })

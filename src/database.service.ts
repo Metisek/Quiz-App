@@ -29,14 +29,23 @@ export class DatabaseService {
     }
   }
 
-  async query(sql: string) {
+  async query(sql: string, ...params: any[]) {
     try {
-      const res = await this.client.query(sql);
-      return(res.rows)
+      const command = sql.trim().split(' ')[0].toUpperCase();
+      const res = await this.client.query(sql, params);
+      
+      if (command === 'SELECT') {
+        return res.rows;
+      } else {
+        console.log(`Data ${command.toLowerCase()}ed successfully`);
+        return;
+      }
     } catch (err) {
       if (err instanceof Error){
-          console.error('Error executing query:', err.message);
+        console.error('Error executing query:', err.message);
       }
-    } 
+      throw err;
+    }
   }
+
 }
