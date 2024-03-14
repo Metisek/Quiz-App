@@ -124,6 +124,22 @@ export class queries {
     }
   }
 
+  async updateSingleCorrectAnswerQuestion(id: number, correctAnswer: string, answers: string[]) {
+    try {
+        const query = `
+            UPDATE quizapp.single_correct_answer_question
+            SET correct_answer = $1,
+                answers = $2
+            WHERE id = $3
+        `;
+        await database_service.query(query, correctAnswer, `{${answers.join(',')}}`, id);
+        console.log(`Single correct answer question with ID ${id} updated successfully`);
+    } catch (error) {
+        console.error(`Failed to update single correct answer question with ID ${id}:`, error);
+        throw new Error(`Failed to update single correct answer question with ID ${id}`);
+    }
+  } 
+  
   // Private getters
 
   private async getQuestionById(questionId: number) {
@@ -136,6 +152,8 @@ export class queries {
       throw new Error("Failed to update queston");
     }
   }
+
+  
 
     
 }

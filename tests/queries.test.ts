@@ -76,4 +76,11 @@ describe('Queries SELECT tests', () =>{
     
         await query_list.updateQuestionText(questionId, newQuestionText);
     })
+
+    test('Update single correct answer question', async () => {
+        const questionId = 65;
+        const correctAnswer = 'Paris';
+        const answers = ['Paris', 'Warsaw', 'London', 'Rome'];
+        await query_list.updateSingleCorrectAnswerQuestion(questionId, correctAnswer, answers);
+    })
 })
