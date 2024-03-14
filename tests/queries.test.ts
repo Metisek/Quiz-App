@@ -38,5 +38,11 @@ describe('Queries SELECT tests', () =>{
     //     }
     // )
     
+    // test('Check quiz insertion', async () =>{ 
+    //     await query_list.insertQuiz("Test Quiz 2"); 
+    //     const res = await query_list.getQuizzes(); 
+    //     checkColumnValueExists(res, "name", "Test Quiz 2");
+    //     }
+    // )
 
 })

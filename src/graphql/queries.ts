@@ -6,7 +6,7 @@ export class queries {
     constructor() {
       database_service.connect();
     }
-  // Method for checking if query connects properly
+  // Method for checking if query select is correct
   async select_query_validation(query:string, error_text:string ){
     try {
       const data = await database_service.query(query);
@@ -58,6 +58,17 @@ export class queries {
     } catch (error) {
       console.error("Failed to insert question:", error);
       throw new Error("Failed to insert question");
+    }
+  }
+  
+  async insertQuiz(name: string) {
+    try {
+      const query = `INSERT INTO quizapp.quiz (id, name) VALUES (DEFAULT, $1)`;
+      await database_service.query(query, name);
+      console.log('Quiz inserted successfully');
+    } catch (error) {
+      console.error("Failed to insert quiz:", error);
+      throw new Error("Failed to insert quiz");
     }
   }
   
