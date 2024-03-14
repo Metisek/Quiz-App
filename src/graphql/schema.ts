@@ -1,17 +1,11 @@
 import { buildSchema } from 'graphql';
+import { queries } from './queries';
 
 const schema = buildSchema(`
-  enum QuestionType {
-    SINGLE_CORRECT_ANSWER
-    MULTIPLE_CORRECT_ANSWERS
-    SORTING
-    PLAIN_TEXT_ANSWER
-  }
-
   type Question {
     id: ID!
-    text: String!
-    type: QuestionType!
+    question_text: String!
+    question_type: String!
   }
 
   type Quiz {
@@ -19,25 +13,21 @@ const schema = buildSchema(`
     name: String!
   }
 
-  input AddQuizInput {
-    name: String!
-  }
-
-  input AddQuestionInput {
-    quizId: ID!
-    text: String!
-    type: QuestionType!
-  }
-
   type Query {
-    getQuizzes: [Quiz!]!
-    getQuestions(quizId: ID!): [Question!]!
-  }
-
-  type Mutation {
-    addQuiz(input: AddQuizInput!): Quiz!
-    addQuestion(input: AddQuestionInput!): Question!
+    getAllQuizzes: [Quiz!]!
+    getQuestionsByQuizId(quizId: ID!): [Question!]!
   }
 `);
 
-export default schema;
+const root = {
+  getAllQuizzes: async () => {
+    const queryInstance = new queries();
+    return await queryInstance.getQuizzes();
+  },
+  getQuestionsByQuizId: async ({ quizId }: { quizId: string }) => {
+    const queryInstance = new queries();
+    return await queryInstance.getQuestions(parseInt(quizId));
+  }
+};
+
+export { schema, root };
