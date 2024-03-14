@@ -24,4 +24,4 @@ EXPOSE 3000
 EXPOSE 5432
 
 # Run the application.
-CMD ["node", "build/index.js"]
+CMD ["node", "build/src/index.js"]
