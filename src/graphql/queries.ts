@@ -139,7 +139,53 @@ export class queries {
         throw new Error(`Failed to update single correct answer question with ID ${id}`);
     }
   } 
-  
+
+  async updateMultipleCorrectAnswersQuestion(id: number, correctAnswer: string[], answers: string[]) {
+    try {
+        const query = `
+            UPDATE quizapp.multiple_correct_answers_question
+            SET correct_answers = $1,
+                answers = $2
+            WHERE id = $3
+        `;
+        await database_service.query(query, `{${correctAnswer.join(',')}}`,  `{${answers.join(',')}}`, id);
+        console.log(`Multiple correct answers question with ID ${id} updated successfully`);
+    } catch (error) {
+        console.error(`Failed to update multiple correct answers question with ID ${id}:`, error);
+        throw new Error(`Failed to update multiple correct answers question with ID ${id}`);
+    }
+  } 
+
+  async updateSortingQuestion(id: number, correctAnswer: string[]) {
+    try {
+        const query = `
+            UPDATE quizapp.sorting_question
+            SET correct_order = $1
+            WHERE id = $2
+        `;
+        await database_service.query(query, `{${correctAnswer.join(',')}}`,  id);
+        console.log(`Sorting question with ID ${id} updated successfully`);
+    } catch (error) {
+        console.error(`Failed to update sorting question with ID ${id}:`, error);
+        throw new Error(`Failed to update sorting question with ID ${id}`);
+    }
+  } 
+
+  async updatePlainTextAnswerQuestion(id: number, correctAnswer: string) {
+    try {
+        const query = `
+            UPDATE quizapp.plain_text_answer_question
+            SET correct_answer = $1
+            WHERE id = $2
+        `;
+        await database_service.query(query, correctAnswer,  id);
+        console.log(`Plain text answer question with ID ${id} updated successfully`);
+    } catch (error) {
+        console.error(`Plain text answer question with ID ${id}:`, error);
+        throw new Error(`Plain text answer question with ID ${id}`);
+    }
+  } 
+
   // Private getters
 
   private async getQuestionById(questionId: number) {
