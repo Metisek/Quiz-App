@@ -71,7 +71,31 @@ export class queries {
       throw new Error("Failed to insert quiz");
     }
   }
+
+  // Data deletion
+
+  async deleteQuiz(quizId: number) {
+    try {
+      const query = `DELETE FROM quizapp.quiz WHERE id = $1`;
+      await database_service.query(query, String(quizId));
+      console.log('Quiz deleted successfully');
+    } catch (error) {
+      console.error("Failed to delete quiz:", error);
+      throw new Error("Failed to delete quiz");
+    }
+  }
+
+  async deleteQuestion(questionId: number) {
+    try {
+      const query = `DELETE FROM quizapp.question WHERE id = $1`;
+      await database_service.query(query, String(questionId));
+      console.log('Question deleted successfully');
+    } catch (error) {
+      console.error("Failed to delete question:", error);
+      throw new Error("Failed to delete question");
+    }
+  }
   
     
     
-  }
+}

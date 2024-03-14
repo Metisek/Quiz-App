@@ -31,18 +31,37 @@ describe('Queries SELECT tests', () =>{
         }
     )
 
-    // test('Check question insertion quiz 1 correct data', async () =>{ 
-    //     await query_list.insertQuestion(1, "Test Question", "single_correct"); 
-    //     const res = await query_list.getQuestions(1); 
-    //     checkColumnValueExists(res, "question_text", "Test Question");
-    //     }
-    // )
+    test('Check quiz insertion', async () =>{ 
+        await query_list.insertQuiz("DELETE_ME"); 
+        const res = await query_list.getQuizzes(); 
+        checkColumnValueExists(res, "name", "DELETE_ME");
+        }
+    )
+
+    test('Check question insertion quiz 1 correct data', async () =>{ 
+        const quiz = await query_list.getQuizzes();
+        const last_quiz= quiz[quiz.length - 1]?.id;
+        await query_list.insertQuestion(last_quiz, "Test Question", "single_correct"); 
+        await query_list.insertQuestion(last_quiz, "Test Question", "single_correct"); 
+        const res = await query_list.getQuestions(last_quiz); 
+        checkColumnValueExists(res, "question_text", "Test Question");
+        }
+    )
+
+    test('Check question deletion', async () =>{ 
+        const quiz = await query_list.getQuizzes();
+        const last_quiz= quiz[quiz.length - 1]?.id;
+        const question = await query_list.getQuestions(last_quiz);
+        const last_question = question[question.length - 1]?.id;
+        await query_list.deleteQuestion(last_question); 
+        }
+    )
     
-    // test('Check quiz insertion', async () =>{ 
-    //     await query_list.insertQuiz("Test Quiz 2"); 
-    //     const res = await query_list.getQuizzes(); 
-    //     checkColumnValueExists(res, "name", "Test Quiz 2");
-    //     }
-    // )
+    test('Check quiz deletion', async () =>{ 
+        const quiz = await query_list.getQuizzes();
+        const last_quiz= quiz[quiz.length - 1]?.id;
+        await query_list.deleteQuiz(last_quiz); 
+        }
+    )
 
 })
