@@ -20,6 +20,16 @@ const schema = buildSchema(`
     name: String!
   }
 
+  type DetailedQuestion {
+    id: ID!
+    question_id: ID!
+    question_text: String!
+    question_type: QuestionType!
+    answers: [String]
+    correct_answers: [String]
+
+  }
+
   input QuizInput {
     id: ID
     name: String
@@ -75,6 +85,7 @@ const schema = buildSchema(`
   type Query {
     getAllQuizzes: [Quiz!]!
     getQuestionsByQuizId(quizId: ID!): [Question!]!
+    getQuestionDetailsByType(questionId: ID!): DetailedQuestion
   }
 `);
 
@@ -126,7 +137,7 @@ const root = {
       return "Invalid input for deleting question";
     }
   },
-  
+
   QuizUpdateName: async ({ quizId, newName }: { quizId: string, newName: string }) => {
     if (quizId && newName) {
       await queryInstance.updateQuizName(parseInt(quizId), newName);
@@ -185,6 +196,31 @@ const root = {
   },
   getQuestionsByQuizId: async ({ quizId }: { quizId: string }) => {
     return await queryInstance.getQuestions(parseInt(quizId));
+  },
+  getQuestionDetailsByType: async ({ questionId }: { questionId: string }) => {
+    if (!(await queryInstance.doesQuestionExist(parseInt(questionId)))) {
+      console.error(`Question with ID ${questionId} not found`);
+      throw new Error(`Question with ID ${questionId} not found`);
+    }
+  
+    const questionType = await queryInstance.getQuestionType(parseInt(questionId));
+  
+    if (questionType) {
+      switch (questionType.question_type) {
+        case "multiple_correct":
+          return await queryInstance.getMultipleCorrectAnswerDetails(parseInt(questionId));
+        case "sorting":
+          return await queryInstance.getSortingQuestionDetails(parseInt(questionId));
+        case "plain_text":
+          return await queryInstance.getPlainTextAnswerQuestionDetails(parseInt(questionId));
+        case "single_correct":
+        default:
+          return await queryInstance.getSingleCorrectAnswerDetails(parseInt(questionId));
+      }
+    } else {
+      console.error(`Question type not found for ID ${questionId}`);
+      throw new Error(`Question type not found for ID ${questionId}`);
+    }
   }
 };
 

@@ -81,6 +81,115 @@ export class queries {
             'Failed to fetch questions from given quiz', [quizId]);
     }
 
+    async getSingleCorrectAnswerDetails(questionId: number) {
+      const query = `
+      SELECT q.id AS id, 
+      q.id AS question_id, 
+      q.question_text AS question_text, 
+      q.question_type AS question_type, 
+      ARRAY(SELECT unnest(sca.answers)) AS answers, 
+      ARRAY[sca.correct_answer] AS correct_answers
+      FROM quizapp.question q
+      LEFT JOIN quizapp.single_correct_answer_question sca ON q.id = sca.question_id
+      WHERE q.id = $1;
+      `;
+      try {
+        const result = await database_service.query(query, questionId);
+        if (result && result.length > 0) {
+          return result[0];
+        } else {
+          console.error(`Single correct answer question with ID ${questionId} not found`);
+          throw new Error(`Single correct answer question with ID ${questionId} not found`);
+        }
+      } catch (error) {
+        console.error('Failed to get single correct answer question details:', error);
+        throw new Error('Failed to get single correct answer question details');
+      }
+    }
+  
+    async getMultipleCorrectAnswerDetails(questionId: number) {
+      const query = `
+      SELECT q.id AS id,
+      q.id AS question_id,
+      q.question_text AS question_text,
+      q.question_type AS question_type,
+      ARRAY(SELECT unnest(mca.answers)) AS answers,
+      mca.correct_answers AS correct_answers
+      FROM quizapp.question q
+      LEFT JOIN quizapp.multiple_correct_answers_question mca ON q.id = mca.question_id
+      WHERE q.id = $1;
+
+      `;
+      try {
+        const result = await database_service.query(query, questionId);
+        if (result && result.length > 0) {
+          return result[0];
+        } else {
+          console.error(`Multiple correct answers question with ID ${questionId} not found`);
+          throw new Error(`Multiple correct answers question with ID ${questionId} not found`);
+        }
+      } catch (error) {
+        console.error('Failed to get multiple correct answers question details:', error);
+        throw new Error('Failed to get multiple correct answers question details');
+      }
+    }
+  
+    async getSortingQuestionDetails(questionId: number) {
+      const query = `
+      SELECT q.id AS id,
+      q.id AS question_id,
+      q.question_text AS question_text,
+      q.question_type AS question_type,
+      ARRAY(SELECT unnest(so.correct_order) ORDER BY random()) AS answers,
+      so.correct_order AS correct_answers
+      FROM quizapp.question q
+      LEFT JOIN quizapp.sorting_question so ON q.id = so.question_id
+      WHERE q.id = $1;
+
+
+      `;
+      try {
+        const result = await database_service.query(query, questionId);
+        if (result && result.length > 0) {
+          return result[0];
+        } else {
+          console.error(`Sorting question with ID ${questionId} not found`);
+          throw new Error(`Sorting question with ID ${questionId} not found`);
+        }
+      } catch (error) {
+        console.error('Failed to get sorting question details:', error);
+        throw new Error('Failed to get sorting question details');
+      }
+    }
+  
+    async getPlainTextAnswerQuestionDetails(questionId: number) {
+      const query = `
+      SELECT q.id AS id,
+      q.quiz_id AS quiz_id,
+      q.question_text AS question_text,
+      q.question_type AS question_type,
+      ARRAY[]::TEXT[] AS answers,
+      COALESCE(ARRAY[pta.correct_answer], ARRAY[]::TEXT[]) AS correct_answers
+      FROM quizapp.question q
+      LEFT JOIN quizapp.plain_text_answer_question pta ON q.id = pta.question_id
+      WHERE q.id = $1;
+      `;
+      try {
+        const result = await database_service.query(query, questionId);
+        if (result && result.length > 0) {
+          return result[0];
+        } else {
+          console.error(`Plain text answer question with ID ${questionId} not found`);
+          throw new Error(`Plain text answer question with ID ${questionId} not found`);
+        }
+      } catch (error) {
+        console.error('Failed to get plain text answer question details:', error);
+        throw new Error('Failed to get plain text answer question details');
+      }
+    }
+  
+  
+
     // Data inserts
     async insertQuestion(quiz_id: number, question_text: string, question_type: string) {
         return this.mutationValidation(`INSERT INTO quizapp.question (quiz_id, question_text, question_type) VALUES ($1, $2, $3)`,
@@ -191,6 +300,15 @@ export class queries {
       return false;
     }
     
+    async getQuestionType(id: number){
+      const query = `SELECT question_type FROM quizapp.question WHERE id = $1`;
+      const result = await database_service.query(query, id);
+      if (result){
+        if (result.length > 0){
+          return result[0]
+        }
+      }
+    }
     // Private getters
 
     private async getQuestionById(questionId: number) {
