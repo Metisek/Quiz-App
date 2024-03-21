@@ -242,7 +242,7 @@ export class queries {
             UPDATE quizapp.single_correct_answer_question
             SET correct_answer = $1,
                 answers = $2
-            WHERE id = $3
+            WHERE question_id = $3
         `;
         return this.mutationValidation(query, `Failed to update single correct answer question with ID ${id}`, [correctAnswer, answers, id]);
     }
@@ -252,7 +252,7 @@ export class queries {
         UPDATE quizapp.multiple_correct_answers_question
         SET correct_answers = $1,
             answers = $2
-        WHERE id = $3
+        WHERE question_id = $3
     `;
         return this.mutationValidation(query, `Failed to update multiple correct answers question with ID ${id}`,
             [`{${correctAnswer.join(',')}}`, `{${answers.join(',')}}`, id]);
@@ -262,7 +262,7 @@ export class queries {
         const query = `
         UPDATE quizapp.sorting_question
         SET correct_order = $1
-        WHERE id = $2
+        WHERE question_id = $2
     `;
         return this.mutationValidation(query, `Failed to update sorting question with ID ${id}`,
             [`{${correctAnswer.join(',')}}`, id]);
@@ -272,7 +272,7 @@ export class queries {
         const query = `
         UPDATE quizapp.plain_text_answer_question
         SET correct_answer = $1
-        WHERE id = $2
+        WHERE question_id = $2
     `;
         return this.mutationValidation(query, `Failed to update plain text answer question with ID ${id}`, [correctAnswer, id]);
     }

@@ -11,8 +11,8 @@ const schema = buildSchema(`
 
   type Question {
     id: ID!
-    text: String!
-    type: QuestionType!
+    question_text: String!
+    question_type: QuestionType!
   }
 
   type Quiz {
@@ -155,19 +155,32 @@ const root = {
     }
   },
   SingleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string, answers: string[] }) => {
-    if (id && correctAnswer && answers && correctAnswer in answers) {
-      await queryInstance.updateSingleCorrectAnswerQuestion(parseInt(id), correctAnswer, answers);
-      return "Single correct answer question updated successfully";
-    } else {
+    if (id && correctAnswer && answers && answers.includes(correctAnswer)) {
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "single_correct"){
+        await queryInstance.updateSingleCorrectAnswerQuestion(parseInt(id), correctAnswer, answers);
+        return "Single correct answer question updated successfully";  
+      }
+      else{
+        return `Invalid type of mutation used for ${question_type.question_type} question`;  
+      }
+      } else {
       return "Invalid input for updating single correct answer question";
     }
   },
   MultipleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string[], answers: string[] }) => {
+    const a = await queryInstance.getQuestionType(parseInt(id));
+    console.log(a);
     if (id && correctAnswer && answers) {
       const allCorrectAnswersExist = correctAnswer.every(answer => answers.includes(answer));
       if (allCorrectAnswersExist){
-        await queryInstance.updateMultipleCorrectAnswersQuestion(parseInt(id), correctAnswer, answers);
-        return "Multiple correct answers question updated successfully";  
+        const question_type = await queryInstance.getQuestionType(parseInt(id))
+        if (question_type.question_type === "multiple_correct"){
+          await queryInstance.updateMultipleCorrectAnswersQuestion(parseInt(id), correctAnswer, answers);
+          return "Multiple correct answers question updated successfully";  
+        } else{
+          return `Invalid type of mutation used for ${question_type.question_type} question`;  
+        }
       } else {
         return "Invalid input for updating multiple correct answers question";
       }
@@ -177,16 +190,27 @@ const root = {
   },
   SortingQuestionUpdate: async ({ id, correctAnswer }: { id: string, correctAnswer: string[] }) => {
     if (id && correctAnswer) {
-      await queryInstance.updateSortingQuestion(parseInt(id), correctAnswer);
-      return "Sorting question updated successfully";
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "sorting"){
+        await queryInstance.updateSortingQuestion(parseInt(id), correctAnswer);
+        return "Sorting question updated successfully";
+    } else{
+      return `Invalid type of mutation used for ${question_type.question_type} question`;  
+    }
     } else {
       return "Invalid input for updating sorting question";
     }
   },
   PlainTextQuestionUpdate: async ({ id, correctAnswer }: { id: string, correctAnswer: string }) => {
     if (id && correctAnswer) {
-      await queryInstance.updatePlainTextAnswerQuestion(parseInt(id), correctAnswer);
-      return "Plain text answer question updated successfully";
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "plain_text"){
+        await queryInstance.updatePlainTextAnswerQuestion(parseInt(id), correctAnswer);
+        return "Plain text answer question updated successfully";
+
+      } else{
+        return `Invalid type of mutation used for ${question_type.question_type} question`;  
+      }
     } else {
       return "Invalid input for updating plain text answer question";
     }
