@@ -2,44 +2,39 @@ import { buildSchema } from 'graphql';
 import { queries } from './queries';
 
 const schema = buildSchema(`
-  """
-  Enumeration representing different types of questions.
-  """
   enum QuestionType {
-    SINGLE_CORRECT_ANSWER
-    MULTIPLE_CORRECT_ANSWERS
-    SORTING
-    PLAIN_TEXT_ANSWER
+    single_correct
+    multiple_correct
+    sorting
+    plain_text
   }
 
-  """
-  Represents a question in the system.
-  """
   type Question {
     id: ID!
-    text: String!
-    type: QuestionType!
+    question_text: String!
+    question_type: QuestionType!
   }
 
-  """
-  Represents a quiz in the system.
-  """
   type Quiz {
     id: ID!
     name: String!
   }
 
-  """
-  Input type for adding or modifying quiz data.
-  """
+  type DetailedQuestion {
+    id: ID!
+    question_id: ID!
+    question_text: String!
+    question_type: QuestionType!
+    answers: [String]
+    correct_answers: [String]
+
+  }
+
   input QuizInput {
     id: ID
     name: String
   }
 
-  """
-  Input type for adding or modifying question data.
-  """
   input QuestionInput {
     id: ID
     quizId: ID
@@ -47,110 +42,209 @@ const schema = buildSchema(`
     type: QuestionType
   }
 
-  """
-  Input type for modifying data (add/update/delete).
-  """
+"""Add"""
+
+  input QuizAddInput {
+    name: String
+  }
+
+  input QuestionAddInput {
+    quizId: ID
+    text: String
+    type: QuestionType
+  }
+
+
+  input QuizDeleteInput {
+    id: ID
+  }
+
+  input QuestionDeleteInput {
+    id: ID
+  }
+
   input ModifyDataInput {
     operation: String!
     quizData: QuizInput
     questionData: QuestionInput
   }
 
-  """
-  Mutation operations for modifying data.
-  """
   type Mutation {
-    """
-    Mutation to modify data (add/update/delete).
-    Example usage: 
-    
-    mutation{
-      modifyData(input:{
-        operation:"add", 
-        quizData:{
-          name:"Test_quiz"
-        }	
-      })
-    } - adds quiz "Test_quiz" to databasec
-    """
-    modifyData(input: ModifyDataInput!): String!
+    QuestionAdd(input: QuestionAddInput!): String!
+    QuizAdd(input: QuizAddInput!): String!
+    QuizDelete(input: QuizDeleteInput!): String!
+    QuestionDelete(input: QuestionDeleteInput!): String!
+    QuizUpdateName(quizId: ID!, newName: String!): String!
+    QuestionUpdateText(questionId: ID!, newText: String!): String!
+    SingleCorrectQuestionUpdate(id: ID!, correctAnswer: String!, answers: [String!]!): String!
+    MultipleCorrectQuestionUpdate(id: ID!, correctAnswer: [String!]!, answers: [String!]!): String!
+    SortingQuestionUpdate(id: ID!, correctAnswer: [String!]!): String!
+    PlainTextQuestionUpdate(id: ID!, correctAnswer: String!): String!
   }
 
-  """
-  Query operations for fetching data.
-  """
   type Query {
-    """
-    Query to fetch all quizzes.
-    """
     getAllQuizzes: [Quiz!]!
-
-    """
-    Query to fetch questions by quiz ID.
-    """
     getQuestionsByQuizId(quizId: ID!): [Question!]!
+    getQuestionDetailsByType(questionId: ID!): DetailedQuestion
   }
 `);
 
 const queryInstance = new queries();
 
 const root = {
-  modifyData: async ({ input }: { input: { operation: string, 
-    quizData?: { id?: string, name?: string }, 
-    questionData?: { id?: string, quizId?: string, text?: string, type?: string } } }) => {
+  QuestionAdd: async ({ input }: { input: { id?: string, quizId?: string, text: string, type: string } }) => {
+    const validQuestionTypes = ["single_correct", "multiple_correct", "sorting", "plain_text"];
+    if (input.quizId && input.text && input.type && validQuestionTypes.includes(input.type)) {
+      await queryInstance.insertQuestion(parseInt(input.quizId), input.text, input.type);
+      return "Question added successfully";
+    } else {
+      return "Invalid input for adding question";
+    }
+  },
+  QuizAdd: async ({ input }: { input: { id?: string, name: string } }) => {
+    if (input.name) {
+      await queryInstance.insertQuiz(input.name);
+      return "Quiz added successfully";
+    } else {
+      return "Invalid input for adding quiz";
+    }
+  },
+  QuizDelete: async ({ input }: { input: { id?: string } }) => {
+    if (input.id) {
+      if (await queryInstance.doesQuizExist(parseInt(input.id))){
+        await queryInstance.deleteQuiz(parseInt(input.id));
+        return "Quiz deleted successfully";
+      }
+      else{
+        return "Quiz with given ID does not exist";
+      }
 
-    switch (input.operation) {
-      case "add":
-        switch (input.quizData ? 'quiz' : (input.questionData ? 'question' : null)) {
-          case "quiz":
-            if (input.quizData?.name) {
-              await queryInstance.insertQuiz(input.quizData.name);
-              return "Quiz added successfully";
-            } else {
-              return "Invalid input for adding quiz";
-            }
-          case "question":
-            if (input.questionData?.quizId && input.questionData.text && input.questionData.type) {
-              await queryInstance.insertQuestion(parseInt(input.questionData.quizId), input.questionData.text, input.questionData.type);
-              return "Question added successfully";
-            } else {
-              return "Invalid input for adding question";
-            }
-          default:
-            return "Invalid input";
+      
+    } else {
+      return "Invalid input for deleting quiz";
+    }
+  },
+
+  QuestionDelete: async ({ input }: { input: {id: string }}) => {
+    if (input.id) {
+      if (await queryInstance.doesQuestionExist(parseInt(input.id))){
+        await queryInstance.deleteQuestion(parseInt(input.id));
+        return "Question deleted successfully";  
+      } else {
+        return "Question with given ID does not exist";
+      }
+    } else {
+      return "Invalid input for deleting question";
+    }
+  },
+
+  QuizUpdateName: async ({ quizId, newName }: { quizId: string, newName: string }) => {
+    if (quizId && newName) {
+      await queryInstance.updateQuizName(parseInt(quizId), newName);
+      return "Quiz name updated successfully";
+    } else {
+      return "Invalid input for updating quiz name";
+    }
+  },
+  QuestionUpdateText: async ({ questionId, newText }: { questionId: string, newText: string }) => {
+    if (questionId && newText) {
+      await queryInstance.updateQuestionText(parseInt(questionId), newText);
+      return "Question text updated successfully";
+    } else {
+      return "Invalid input for updating question text";
+    }
+  },
+  SingleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string, answers: string[] }) => {
+    if (id && correctAnswer && answers && answers.includes(correctAnswer)) {
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "single_correct"){
+        await queryInstance.updateSingleCorrectAnswerQuestion(parseInt(id), correctAnswer, answers);
+        return "Single correct answer question updated successfully";  
+      }
+      else{
+        return `Invalid type of mutation used for ${question_type.question_type} question`;  
+      }
+      } else {
+      return "Invalid input for updating single correct answer question";
+    }
+  },
+  MultipleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string[], answers: string[] }) => {
+    const a = await queryInstance.getQuestionType(parseInt(id));
+    console.log(a);
+    if (id && correctAnswer && answers) {
+      const allCorrectAnswersExist = correctAnswer.every(answer => answers.includes(answer));
+      if (allCorrectAnswersExist){
+        const question_type = await queryInstance.getQuestionType(parseInt(id))
+        if (question_type.question_type === "multiple_correct"){
+          await queryInstance.updateMultipleCorrectAnswersQuestion(parseInt(id), correctAnswer, answers);
+          return "Multiple correct answers question updated successfully";  
+        } else{
+          return `Invalid type of mutation used for ${question_type.question_type} question`;  
         }
-      case "delete":
-        switch (input.quizData ? 'quiz' : (input.questionData ? 'question' : null)) {
-          case "quiz":
-            if (input.quizData?.id) {
-              await queryInstance.deleteQuiz(parseInt(input.quizData.id));
-              return "Quiz deleted successfully";
-            } else {
-              return "Invalid input for deleting quiz";
-            }
-          case "question":
-            if (input.questionData?.id) {
-              await queryInstance.deleteQuestion(parseInt(input.questionData.id));
-              return "Question deleted successfully";
-            } else {
-              return "Invalid input for deleting question";
-            }
-          default:
-            return "Invalid input";
-        }
-      case "insert":
-        return 0;
-      default:
-        return "Invalid operation";
+      } else {
+        return "Invalid input for updating multiple correct answers question";
+      }
+    } else {
+      return "Invalid input for updating multiple correct answers question";
+    }
+  },
+  SortingQuestionUpdate: async ({ id, correctAnswer }: { id: string, correctAnswer: string[] }) => {
+    if (id && correctAnswer) {
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "sorting"){
+        await queryInstance.updateSortingQuestion(parseInt(id), correctAnswer);
+        return "Sorting question updated successfully";
+    } else{
+      return `Invalid type of mutation used for ${question_type.question_type} question`;  
+    }
+    } else {
+      return "Invalid input for updating sorting question";
+    }
+  },
+  PlainTextQuestionUpdate: async ({ id, correctAnswer }: { id: string, correctAnswer: string }) => {
+    if (id && correctAnswer) {
+      const question_type = await queryInstance.getQuestionType(parseInt(id))
+      if (question_type.question_type === "plain_text"){
+        await queryInstance.updatePlainTextAnswerQuestion(parseInt(id), correctAnswer);
+        return "Plain text answer question updated successfully";
+
+      } else{
+        return `Invalid type of mutation used for ${question_type.question_type} question`;  
+      }
+    } else {
+      return "Invalid input for updating plain text answer question";
     }
   },
   getAllQuizzes: async () => {
-    const queryInstance = new queries();
     return await queryInstance.getQuizzes();
   },
   getQuestionsByQuizId: async ({ quizId }: { quizId: string }) => {
-    const queryInstance = new queries();
     return await queryInstance.getQuestions(parseInt(quizId));
+  },
+  getQuestionDetailsByType: async ({ questionId }: { questionId: string }) => {
+    if (!(await queryInstance.doesQuestionExist(parseInt(questionId)))) {
+      console.error(`Question with ID ${questionId} not found`);
+      throw new Error(`Question with ID ${questionId} not found`);
+    }
+  
+    const questionType = await queryInstance.getQuestionType(parseInt(questionId));
+  
+    if (questionType) {
+      switch (questionType.question_type) {
+        case "multiple_correct":
+          return await queryInstance.getMultipleCorrectAnswerDetails(parseInt(questionId));
+        case "sorting":
+          return await queryInstance.getSortingQuestionDetails(parseInt(questionId));
+        case "plain_text":
+          return await queryInstance.getPlainTextAnswerQuestionDetails(parseInt(questionId));
+        case "single_correct":
+        default:
+          return await queryInstance.getSingleCorrectAnswerDetails(parseInt(questionId));
+      }
+    } else {
+      console.error(`Question type not found for ID ${questionId}`);
+      throw new Error(`Question type not found for ID ${questionId}`);
+    }
   }
 };
 
