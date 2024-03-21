@@ -71,7 +71,7 @@ const schema = buildSchema(`
           name:"Test_quiz"
         }	
       })
-    } - adds quiz "Test_quiz" to database
+    } - adds quiz "Test_quiz" to databasec
     """
     modifyData(input: ModifyDataInput!): String!
   }
