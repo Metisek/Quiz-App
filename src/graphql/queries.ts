@@ -95,13 +95,22 @@ export class queries {
     // Data deletion
 
     async deleteQuiz(quizId: number) {
-        return this.mutationValidation(`DELETE FROM quizapp.quiz WHERE id = $1`,
-            "Failed to delete quiz", [quizId]);
-    }
+      return this.mutationValidation(`DELETE FROM quizapp.quiz WHERE id = $1`,
+          "Failed to delete quiz", [quizId]);
+      }
 
     async deleteQuestion(questionId: number) {
+      const query = `SELECT * FROM quizapp.quiz WHERE id = $1`;
+      const result = await database_service.query(query, questionId);
+      if (result) {
         return this.mutationValidation(`DELETE FROM quizapp.question WHERE id = $1`,
             "Failed to delete question", [questionId]);
+      }
+      else{
+        console.error(`Question with ID ${questionId} does not exist`);
+        throw new Error("Failed to delete question");
+      }
+
     }
 
 
@@ -159,6 +168,29 @@ export class queries {
         return this.mutationValidation(query, `Failed to update plain text answer question with ID ${id}`, [correctAnswer, id]);
     }
 
+    // Data existing check
+    async doesQuizExist(id: number){
+      const query = `SELECT * FROM quizapp.quiz WHERE id = $1`;
+      const result = await database_service.query(query, id);
+      if (result){
+        if (result.length > 0){
+          return true;
+        }
+      }
+      return false;
+    }
+
+    async doesQuestionExist(id: number){
+      const query = `SELECT * FROM quizapp.question WHERE id = $1`;
+      const result = await database_service.query(query, id);
+      if (result){
+        if (result.length > 0){
+          return true;
+        }
+      }
+      return false;
+    }
+    
     // Private getters
 
     private async getQuestionById(questionId: number) {

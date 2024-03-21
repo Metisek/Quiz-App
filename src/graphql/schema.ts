@@ -32,6 +32,27 @@ const schema = buildSchema(`
     type: QuestionType
   }
 
+"""Add"""
+
+  input QuizAddInput {
+    name: String
+  }
+
+  input QuestionAddInput {
+    quizId: ID
+    text: String
+    type: QuestionType
+  }
+
+
+  input QuizDeleteInput {
+    id: ID
+  }
+
+  input QuestionDeleteInput {
+    id: ID
+  }
+
   input ModifyDataInput {
     operation: String!
     quizData: QuizInput
@@ -39,10 +60,10 @@ const schema = buildSchema(`
   }
 
   type Mutation {
-    QuestionAdd(input: QuestionInput!): String!
-    QuizAdd(input: QuizInput!): String!
-    QuizDelete(quizId: ID!): String!
-    QuestionDelete(questionId: ID!): String!
+    QuestionAdd(input: QuestionAddInput!): String!
+    QuizAdd(input: QuizAddInput!): String!
+    QuizDelete(input: QuizDeleteInput!): String!
+    QuestionDelete(input: QuestionDeleteInput!): String!
     QuizUpdateName(quizId: ID!, newName: String!): String!
     QuestionUpdateText(questionId: ID!, newText: String!): String!
     SingleCorrectQuestionUpdate(id: ID!, correctAnswer: String!, answers: [String!]!): String!
@@ -77,22 +98,35 @@ const root = {
       return "Invalid input for adding quiz";
     }
   },
-  QuizDelete: async ({ quizId }: { quizId: string }) => {
-    if (quizId) {
-      await queryInstance.deleteQuiz(parseInt(quizId));
-      return "Quiz deleted successfully";
+  QuizDelete: async ({ input }: { input: { id?: string } }) => {
+    if (input.id) {
+      if (await queryInstance.doesQuizExist(parseInt(input.id))){
+        await queryInstance.deleteQuiz(parseInt(input.id));
+        return "Quiz deleted successfully";
+      }
+      else{
+        return "Quiz with given ID does not exist";
+      }
+
+      
     } else {
       return "Invalid input for deleting quiz";
     }
   },
-  QuestionDelete: async ({ questionId }: { questionId: string }) => {
-    if (questionId) {
-      await queryInstance.deleteQuestion(parseInt(questionId));
-      return "Question deleted successfully";
+
+  QuestionDelete: async ({ input }: { input: {id: string }}) => {
+    if (input.id) {
+      if (await queryInstance.doesQuestionExist(parseInt(input.id))){
+        await queryInstance.deleteQuestion(parseInt(input.id));
+        return "Question deleted successfully";  
+      } else {
+        return "Question with given ID does not exist";
+      }
     } else {
       return "Invalid input for deleting question";
     }
   },
+  
   QuizUpdateName: async ({ quizId, newName }: { quizId: string, newName: string }) => {
     if (quizId && newName) {
       await queryInstance.updateQuizName(parseInt(quizId), newName);
