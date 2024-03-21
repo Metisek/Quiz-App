@@ -92,11 +92,12 @@ const schema = buildSchema(`
   }
 `);
 
+const queryInstance = new queries();
+
 const root = {
   modifyData: async ({ input }: { input: { operation: string, 
     quizData?: { id?: string, name?: string }, 
     questionData?: { id?: string, quizId?: string, text?: string, type?: string } } }) => {
-    const queryInstance = new queries();
 
     switch (input.operation) {
       case "add":
