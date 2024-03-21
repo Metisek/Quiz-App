@@ -110,7 +110,7 @@ const root = {
     }
   },
   SingleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string, answers: string[] }) => {
-    if (id && correctAnswer && answers) {
+    if (id && correctAnswer && answers && correctAnswer in answers) {
       await queryInstance.updateSingleCorrectAnswerQuestion(parseInt(id), correctAnswer, answers);
       return "Single correct answer question updated successfully";
     } else {
@@ -119,8 +119,13 @@ const root = {
   },
   MultipleCorrectQuestionUpdate: async ({ id, correctAnswer, answers }: { id: string, correctAnswer: string[], answers: string[] }) => {
     if (id && correctAnswer && answers) {
-      await queryInstance.updateMultipleCorrectAnswersQuestion(parseInt(id), correctAnswer, answers);
-      return "Multiple correct answers question updated successfully";
+      const allCorrectAnswersExist = correctAnswer.every(answer => answers.includes(answer));
+      if (allCorrectAnswersExist){
+        await queryInstance.updateMultipleCorrectAnswersQuestion(parseInt(id), correctAnswer, answers);
+        return "Multiple correct answers question updated successfully";  
+      } else {
+        return "Invalid input for updating multiple correct answers question";
+      }
     } else {
       return "Invalid input for updating multiple correct answers question";
     }
