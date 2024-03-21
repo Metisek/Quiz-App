@@ -59,10 +59,13 @@ export class queries {
     // Method for checking if data manipulation works
     async mutationValidation(query: string, errorText: string, params: any[] = []) {
         try {
+            this.startTransaction();
             await database_service.query(query, ...params);
             console.log('Data operation completed successfully');
+            this.commitTransaction();
         } catch (error) {
             console.error(errorText, error);
+            this.rollbackTransaction();
             throw new Error("Failed to manipulate data");
         }
     }
